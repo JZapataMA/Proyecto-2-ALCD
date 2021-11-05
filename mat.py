@@ -13,7 +13,10 @@ def getitem(M, k):
     0
     """
     assert k[0] in M.D[0] and k[1] in M.D[1]
-    pass
+    if (k[0], k[1]) in M.f.keys():
+        return M.f[(k[0], k[1])]
+    else:
+        return 0
 
 def equal(A, B):
     """
@@ -39,7 +42,31 @@ def equal(A, B):
     True
     """
     assert A.D == B.D
-    pass
+    equal = True
+    for a in A.f.keys():
+        if A[a] != 0:
+            if a not in B.f.keys():
+                equal = False
+            else:
+                if A[a] != B[a]:
+                    equal = False
+        else:
+            if a in B.f.keys():
+                if B[a] != 0:
+                    equal = False
+    for a in B.f.keys():
+        if B[a] != 0:
+            if a not in A.f.keys():
+                equal = False
+            else:
+                if A[a] != B[a]:
+                    equal = False
+        else:
+            if a in A.f.keys():
+                if A[a] != 0:
+                    equal = False
+    return equal
+
 
 def setitem(M, k, val):
     """
@@ -59,7 +86,9 @@ def setitem(M, k, val):
     True
     """
     assert k[0] in M.D[0] and k[1] in M.D[1]
-    pass
+    M.f[(k[0], k[1])] = val
+    return 
+    
 
 def add(A, B):
     """
@@ -87,7 +116,17 @@ def add(A, B):
     True
     """
     assert A.D == B.D
-    pass
+    #Obtener los productos cruz
+    dom_1 = A.D[0]
+    dom_2 = A.D[1]
+    dom = [(a,b) for a in dom_1 for b in dom_2]
+    res = dict()
+    for a in dom:
+        res[a] = A[a] + B[a]
+    return Mat((dom_1, dom_2), res)
+
+
+   
 
 def scalar_mul(M, x):
     """
@@ -101,7 +140,14 @@ def scalar_mul(M, x):
     >>> 0.25*M == Mat(({1,3,5}, {2,4}), {(1,2):1.0, (5,4):0.5, (3,4):0.75})
     True
     """
-    pass
+    dom_1 = A.D[0]
+    dom_2 = A.D[1]
+    dom = [(a,b) for a in dom_1 for b in dom_2]
+    for a in dom:
+        A[a] = x * A[a]
+    return A
+
+    
 
 def transpose(M):
     """
@@ -115,7 +161,17 @@ def transpose(M):
     >>> M.transpose() == Mt
     True
     """
-    pass
+    dom_1 = A.D[0]
+    dom_2 = A.D[1]
+    d = dict()
+    C = Mat((dom_2, dom_1), d)
+    dom_n = [(a,b) for a in dom_1 for b in dom_2]    
+    for t in dom_n:
+        a, b = t     
+        C[b, a] = A[t]
+    return C   
+
+   
 
 def vector_matrix_mul(v, M):
     """
@@ -142,7 +198,27 @@ def vector_matrix_mul(v, M):
     True
     """
     assert M.D[0] == v.D
-    pass
+    filas = M.D[0]
+    cols = M.D[1]
+    rec = dict()
+    vectores = []
+    for a in filas:
+        for b in cols:
+            rec[b] = M[a, b]
+            vector = Vec(cols, rec)
+        vectores.append(vector)
+    vectores = [v*a for a in vectores]
+    for a in range(len(vectores)):
+        if a == 0:
+            res = vectores[a]
+        else:
+            res += vectores[a]
+    return res
+    
+
+        
+
+
 
 def matrix_vector_mul(M, v):
     """
@@ -270,3 +346,21 @@ class Mat:
 
     def __iter__(self):
         raise TypeError('%r object is not iterable' % self.__class__.__name__)
+
+if __name__ == '__main__':
+    #M = Mat(({1,3,5}, {'a'}), {(1,'a'):4, (5,'a'): 2})
+    #print (M[5, 'a'])
+    A = Mat(({'a','b'}, {'A','B'}), {('a','B'):2, ('b','A'):1})
+    B = Mat(({'a','b'}, {'A','B'}), {('a','B'):2, ('b','A'):1, ('b','B'):0})
+    #C = Mat(({'a','b'}, {'A','B'}), {('a','B'):2, ('b','A'):1, ('b','B'):5})
+    #print(A == B)
+    #print (A == Mat(({'a','b'}, {'A','B'}), {('a','B'):2, ('b','A'):1}))
+    #A[('a', 'B')] = 3
+    #print (A)
+    #print (A.transpose())
+    #print (A+B)
+    v1 = Vec({1, 2, 3}, {1: 1, 2: 8})
+    M1 = Mat(({1, 2, 3}, {'a', 'b', 'c'}), {(1, 'b'): 2, (2, 'a'):-1, (3, 'a'): 1, (3, 'c'): 7})
+    print (v1*M1)
+    print(v1*M1 == Vec({'a', 'b', 'c'},{'a': -8, 'b': 2, 'c': 0}))
+
