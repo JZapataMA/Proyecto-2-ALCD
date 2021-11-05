@@ -1,4 +1,5 @@
 # Copyright 2013 Philip N. Klein
+import matutil as mut
 from vec import Vec
 
 #Test your Mat class over R and also over GF(2).  The following tests use only R.
@@ -201,24 +202,22 @@ def vector_matrix_mul(v, M):
     filas = M.D[0]
     cols = M.D[1]
     rec = dict()
-    vectores = []
+    vectores = dict()
     for a in filas:
         for b in cols:
             rec[b] = M[a, b]
             vector = Vec(cols, rec)
-        vectores.append(vector)
-    vectores = [v*a for a in vectores]
-    for a in range(len(vectores)):
-        if a == 0:
-            res = vectores[a]
+        rec  = dict()
+        vectores[a] = vector
+    #vectores = [v*a for a in vectores]
+    i = 0
+    for a in filas:
+        if i == 0:
+            res = v[a]* vectores[a]
         else:
-            res += vectores[a]
+            res += v[a]* vectores[a]
+        i += 1
     return res
-    
-
-        
-
-
 
 def matrix_vector_mul(M, v):
     """
@@ -245,7 +244,25 @@ def matrix_vector_mul(M, v):
     True
     """
     assert M.D[1] == v.D
-    pass
+    filas = M.D[0]
+    cols = M.D[1]
+    rec = dict()
+    vectores = dict()
+    for a in cols:
+        for b in filas:
+            rec[b] = M[b, a]
+            vector = Vec(filas, rec)
+        rec  = dict()
+        vectores[a] = vector
+    i = 0
+    for a in cols:
+        if i == 0:
+            res = v[a]* vectores[a]
+        else:
+            res += v[a]* vectores[a]
+        i += 1
+    return res
+
 
 def matrix_matrix_mul(A, B):
     """
@@ -274,7 +291,25 @@ def matrix_matrix_mul(A, B):
     True
     """
     assert A.D[1] == B.D[0]
-    pass
+    #sacamos las columnas de B
+    filas = B.D[0]
+    cols = B.D[1]
+    rec = dict()
+    column_B = dict()
+    for a in cols:
+        for b in filas:
+            rec[b] = B[b, a]
+            vector = Vec(filas, rec)
+        rec  = dict()
+        column_B[a] = vector
+    list_res = dict()
+    for vector in column_B:
+        list_res[vector] = A*column_B[vector]
+    #hacemos la matriz resultado
+    result = mut.coldict2mat(list_res)
+    return result
+
+    
 
 ################################################################################
 
@@ -347,20 +382,6 @@ class Mat:
     def __iter__(self):
         raise TypeError('%r object is not iterable' % self.__class__.__name__)
 
-if __name__ == '__main__':
-    #M = Mat(({1,3,5}, {'a'}), {(1,'a'):4, (5,'a'): 2})
-    #print (M[5, 'a'])
-    A = Mat(({'a','b'}, {'A','B'}), {('a','B'):2, ('b','A'):1})
-    B = Mat(({'a','b'}, {'A','B'}), {('a','B'):2, ('b','A'):1, ('b','B'):0})
-    #C = Mat(({'a','b'}, {'A','B'}), {('a','B'):2, ('b','A'):1, ('b','B'):5})
-    #print(A == B)
-    #print (A == Mat(({'a','b'}, {'A','B'}), {('a','B'):2, ('b','A'):1}))
-    #A[('a', 'B')] = 3
-    #print (A)
-    #print (A.transpose())
-    #print (A+B)
-    v1 = Vec({1, 2, 3}, {1: 1, 2: 8})
-    M1 = Mat(({1, 2, 3}, {'a', 'b', 'c'}), {(1, 'b'): 2, (2, 'a'):-1, (3, 'a'): 1, (3, 'c'): 7})
-    print (v1*M1)
-    print(v1*M1 == Vec({'a', 'b', 'c'},{'a': -8, 'b': 2, 'c': 0}))
+
+
 
